@@ -1,0 +1,105 @@
+
+
+-- b1 : cai node js
+--b2 : cai git(phan mem cho phep chay file js nhanh chong)
+-- b3: tao thu muc chua project , click chuot phai/ git bash here -> mo cua so cmd cua nodejs
+
+--- KIEN THUC NODE JS
+  0. cac lenh trong cmd git:
+     + npm init : tao project moi (se sinh file package.json) trong folder project
+     + node <tenfilejs> : chay file do
+     + clear: xoa sach cmd
+     + ctrl+C : stop server
+  1.MODULE:
+   + module la dang dong goi cac ham thanh cac file js de o file khac co the goi dk
+   + vd:
+       +file module:
+          var temp="helo modu nhe";
+           module.exports=temp; 
+       + file goi module:
+           var d=require("./modul1.js");
+   
+  2.Buffer: kieu du lieu luu tam , dung de luu anh, file ... vao db
+   var buffer=new Buffer("Hello tuyen","utf-8");  /// chuyen text thanh Buffer
+  console.log(buffer);
+  console.log(buffer.toString());   // chuyen ngc lai buffer thanh  string "Hello world"
+  console.log(buffer.toJSON());   // chuyen buffer thanh Jsonstring de truyen giua client va server
+  console.log(Buffer.from(buffer.toJSON()));  /// chuyen jsonstring thanh buffer
+  3. Doc ghi file : dung module fs
+    var fs=require("fs")  // thu vien doc viet file
+    var noidung =fs.readFileSync(__dirname+"/kienthuc.txt");  //doc file :noidung la kieu Buffer
+    fs.writeFileSync(__dirname+"/test.txt",dulieu);     //    ghi file: dulieu la buffer or string
+  
+ 4.Web server dang don gian:
+      var fs=require("fs")  // thu vien doc viet file
+   var http=require("http"); 
+   http.createServer(function(req,res){
+   res.writeHead(200,{"Content-Type":"text/html"});   //text/txt : neu muon tra ve text, application/json: neu muon tra ve json -> res.end(JSON.stringify({name:"tuyen",age:123});
+   var noidung =fs.readFileSync(__dirname+"/test.html");  //doc file :noidung la kieu Buffer
+   res.end(noidung);  //  noi dung muon tra ve client , la file web kieu buffer or string, la 1 doan string, la 1 doan  string html
+                    // ngoai ra ta co the dung pipe de tra file ve client :vd: fs.createReadStream(__dirname+"/test.html").pipe(res);  
+
+ console.log("da co client nhay zo:"+req);
+
+   }).listen(8181);
+ 
+  5. Tao webserver voi Express:
+     b1 : tao 1 file package.json voi noi dung:
+          {
+           "name": "SERVER",
+            "version": "0.0.1",
+          "private": "true",
+         "dependencies": {
+           "express": "*"
+           }
+           }
+      b2: vao console cua git chay lenh npm install de nodejs tai xuong tat ca cac goi trong dependencies
+     
+   b3: xay dung web:
+       var express=require("express");
+     var app=express();
+      var server=require("http").createServer(app);
+     server.listen(3000);
+      app.get("/",function(req,res){
+        res.sendFile(__dirname+"/test.html");  // nhan vao request get va tra ve file html xuong client
+     // res.writeHead(200,{"Content-Type":"text/plaint"});
+    // res.end("helo clent");
+
+    });
+
+
+      app.get("/thuthamso/:param1/:param2",function(req,res){   // request get voi tham so
+     var param1=req.params.param1;
+     var param2=req.params.param2;
+      res.send("day nhe p1:"+param1);
+     });
+    app.post("/save",function(req,res){
+  // xu ly request post
+
+
+    });
+     
+------------------------------------------------------------
+  6. tao web server su dung express,ejs, co  thu muc public luu file tai nguyen css,js.., thu muc views luu file html (.ejs) cua trang web
+     
+     b1: tao 2 thu muc public, views trong folder project
+     b2: sua file package.json de install thu vien ejs
+     b3:  tao file nguon :
+      vd: 
+          var express=require("express");
+         var app=express();
+        app.use(express.static("public"));   // cho phep thu muc pubic la tai nguyen public , mn co the truy cap vao dk
+        app.set("view engine","ejs");   // cho phep su dung duoi ejs
+    app.set("views","./views");   // cho phep su dung views la thu muc chua file view html
+        var server=require("http").createServer(app);
+     server.listen(3000);
+        app.get("/",function(req,res){
+       res.render("trangchu");  // tra ve file html xuong client
+
+      });
+
+
+
+
+
+  

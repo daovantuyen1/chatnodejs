@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+    <head>
+            <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0">
+    <title>
+       Chit chat
+    </title>
+     <link rel="stylesheet" href="bootstrap.css"/>
+     <style>
+         .m_t_b{
+          margin-top: 5px !important;
+          margin-bottom: 5px !important;
+         }
+         .highlineborder{
+            margin: 5px !important;
+            padding: 10px;
+            border: 1px solid gray;
+            border-radius: 18px;
+            box-shadow: 5px 4px #bdb4b496;
+
+         }
+          .redd
+          {
+              color: red !important;
+          }
+          .bluee
+          {
+              color: green !important;
+          }
+          .row
+          {
+              margin-left: 0px !important;
+              margin-right: 0px !important;
+          }
+          .showw
+          {
+              display: block;
+          }
+          .hidee{
+              display: none;
+          }
+          .mymess
+          {
+             padding: 5px;
+             border-radius:10px;
+              border:1px solid white;
+              margin: 5px;
+              background-color:seagreen;
+              color:black;
+
+          }
+
+       .friendmess
+          {
+              padding: 5px;
+              border-radius:10px;
+              border:1px solid white;
+              margin: 5px;
+              background-color:cornsilk;
+              color:black;
+
+          }
+          
+     </style>
+     <script src="jquery.min.js"></script>
+     <script src="socket.io/socket.io.js"></script>
+     <script src="bootstrap.js"></script>
+</head>
+<body>
+    <p  id="txtntf" style="text-align: center"></p>
+     <h1>Chat chit </h1>
+     <p style="text-align:right; margin-right:20px;" id="lbUserName"></p>
+     <div id="loginframe">
+        <div class="row">
+            <div class="col-md-5 col-md-offset-7">
+                <div class="row">
+                    <div class="col-md-6"> <input type="text" id="txtUserLogin" placeholder="Username..." class="form-control m_t_b">  </div>
+                    <div class="col-md-6"> <input type="button" id="btnLogin" class="btn btn-primary m_t_b" value="Login">  </div>
+                </div>
+            </div>
+        </div>
+     </div>
+    <div id="mainframe"  class="container">
+        <div class="row"> 
+            <div class="col-md-4" id="framelistonline">
+                 <h3> Online list </h3>
+                 <div style="overflow: auto;     height: 400px;">
+                        <ul id="onlinelist">
+                  
+                            </ul>
+                 </div>
+                
+            </div>
+            <div class="col-md-8">
+                    <div id="chatframe" class="highlineborder" style="overflow:auto;height:500px; background-color:black; color:red;"> 
+                          
+                      </div>
+
+                   
+            </div>
+        </div>
+        <h3> Chat </h3>  
+        <div id="commiunicateframe" class="row highlineborder">
+             <label> Receiver:</label> 
+             <input type="text" id="txtReceiver" class="form-control m_t_b"> 
+             <label> Message:</label>
+             <div class="row">
+               <div class="col-md-6">
+                    <input type="text" id="txtMess" class="form-control m_t_b">
+               </div>
+               <div class="col-md-6">
+                    <input type="file" id="txtMessFile" class="form-control m_t_b">
+                </div>
+             </div>
+            
+             <button id="btnSend" class="btn btn-primary">Send</button> 
+         </div>
+         <h3 class="hidee"> Register </h3>
+         <div id="frameregister" class="row highlineborder hidee">
+             <label>
+                 Username:
+             </label>
+             <input type="text" class="form-control m_t_b" id="txtregister"/>
+            <button id="btnRegister" class="btn btn-primary ">Register</button> 
+          </div>
+
+    </div>
+   
+
+    <script>
+          $(function() {
+            const gr="green",rd="red";
+            var socket=io("http://10.239.105.52:3000");
+            function ntf(content,color)
+            {
+               //  redd bluee
+              $("#txtntf").text(content);
+              if(color=="red")
+              {
+                 if($("#txtntf").hasClass("bluee"))  $("#txtntf").removeClass("bluee");
+                 if(!$("#txtntf").hasClass("redd"))  $("#txtntf").addClass("redd");
+              }
+              else  if(color=="green")
+              {
+                if($("#txtntf").hasClass("redd"))  $("#txtntf").removeClass("redd");
+                 if(!$("#txtntf").hasClass("bluee"))  $("#txtntf").addClass("bluee");
+
+              }
+             
+            }
+            function addMess(messData,isMe)
+            {
+                /*
+                var messobj={
+                fromuser:dat.fromuser,
+                touser:dat.touser,
+                mess:dat.mess,
+                type:dat.type,
+                datetime:datetimeNow()
+              };   */
+              // chatframe
+
+               if(isMe)
+               {
+                var structmess="<div class='mymess' data-mess='"+JSON.stringify(messData)+"'> <label>Me:</label> <div class='ContentMess'> "+messData.mess+" </div> <div class='timesendmess'> "+messData.datetime+" </div> </div>";
+                $("#chatframe").append(structmess);
+               }
+               else
+               {
+                    var structmess="<div class='friendmess' data-mess='"+JSON.stringify(messData)+"'> <label>"+messData.fromuser+":</label> <div class='ContentMess'> "+messData.mess+" </div> <div class='timesendmess'>"+messData.datetime+" </div> </div>";
+                    $("#chatframe").append(structmess);
+
+               }
+               $('#chatframe').stop().animate({
+                scrollTop: $('#chatframe')[0].scrollHeight
+                }, 800);
+            }
+            function isValid(dat)
+            {
+              if(dat==undefined||dat==null) return false;
+              else
+               if(dat.trim()=="") return false;
+               else
+              return true;
+            }
+            function isSocket()
+            {
+                if(socket==undefined||socket==null)
+                return false;
+                else return true;
+            }
+
+            var SKeventList= {
+                "connect":function(){
+                    console.log("connection to server success");
+                    ntf("connection to server success",gr);
+                    socket.on("ntf",SKeventList["ntf"]);
+                    socket.on("getonlinelist",SKeventList["getonlinelist"]);
+                    socket.on("sendmessmyself",SKeventList["sendmessmyself"]);
+                    socket.on("receivermess",SKeventList["receivermess"]);
+
+                    
+                    setInterval(function(){
+                        if(isSocket())
+                        {
+                            socket.emit("getonlinelist");
+                        }
+                     },60*1000);
+                },
+                "ntf":function(dat){
+                    console.log("ntf");
+                    console.log(dat);
+                    if(typeof dat==="object")
+                    {
+                        console.log(dat.user);
+                       $("#lbUserName").text(dat.user);
+                       ntf(dat.ntf,gr);
+                    }
+                    else
+                    if(typeof dat==="string")
+                    {
+                        ntf(dat,rd);
+                     }
+                
+                },
+                "getonlinelist":function(dat){
+                    console.log("getonlinelist");
+                    console.log(dat);
+                    var keys = Object.keys(dat);
+                    if(keys.length>0)
+                    {
+                      $("#onlinelist").html("");
+                      for(var i=0;i<keys.length;i++)
+                      {
+                        $("#onlinelist").append("<li id='frienditem'> "+keys[i]+" </li>");
+                      }
+                      
+                    }
+                }  ,
+                "sendmessmyself":function(dat)
+                {
+                    console.log("sendmessmyself");
+                    console.log(dat);
+                    addMess(dat,true);
+                },
+                "receivermess":function(dat)
+                {
+                    console.log("receivermess");
+                    console.log(dat);
+                    addMess(dat,false);
+                }
+
+            };
+          
+       
+
+            socket.on("connect",SKeventList[ "connect"]);
+    
+          
+           
+            $("#btnLogin").click(function(){
+                if(isSocket())
+                {
+                    let user=$("#txtUserLogin").val();
+                    if(isValid(user))  {
+                        socket.emit("login",{user:user});
+                    }
+                  
+                }
+
+             });
+
+            $("#btnSend").click(function(){
+                if(isSocket())
+                {
+                    var txtMess=$("#txtMess").val();
+                    var txtReceiver=$("#txtReceiver").val();
+                    var txtuser= $("#lbUserName").text();
+                    if(isValid(txtMess)&&isValid(txtReceiver)&&isValid(txtuser))
+                    {
+                        var datasend={fromuser:txtuser.trim(),touser:txtReceiver.trim(),mess:txtMess.trim(),type:0};
+                        socket.emit("sendmess",datasend);
+                        return;
+                    }
+                    else
+                      ntf("Receiver or message is empty",rd);
+                    
+                }
+
+             });
+ 
+             // btnSend  txtMess  txtReceiver txtMessFile
+
+          });
+       
+    </script>
+</body>
+
+</html>
